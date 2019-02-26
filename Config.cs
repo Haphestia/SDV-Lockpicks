@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Modworks = bwdyworks.Modworks;
 
 namespace Lockpicks
 {
@@ -29,7 +30,7 @@ namespace Lockpicks
             MapY = int.Parse(ss[2]);
         }
 
-        public string str()
+        public string Str()
         {
             return MapName + "." + MapX + "." + MapY;
         }
@@ -40,13 +41,13 @@ namespace Lockpicks
         public static Dictionary<string, string> OutLocks;
         public static Dictionary<string, string> InLocks;
         public static bool ready = false;
-        public static void Load()
+        public static void Load(string directory)
         {
             try
             {
-                string filecontents = File.ReadAllText(Mod.Instance.Helper.DirectoryPath + Path.DirectorySeparatorChar + "out_locks.json");
+                string filecontents = File.ReadAllText(directory + "out_locks.json");
                 OutLocks = JsonConvert.DeserializeObject<Dictionary<string, string>>(filecontents);
-                filecontents = File.ReadAllText(Mod.Instance.Helper.DirectoryPath + Path.DirectorySeparatorChar + "in_locks.json");
+                filecontents = File.ReadAllText(directory + "in_locks.json");
                 InLocks = JsonConvert.DeserializeObject<Dictionary<string, string>>(filecontents);
                 //add inverse inlocks
                 foreach (var l in InLocks.Keys.ToArray())
@@ -57,7 +58,7 @@ namespace Lockpicks
             }
             catch (Exception e)
             {
-                Mod.Instance.Monitor.Log("Failed to read lock config file: " + e.Message, StardewModdingAPI.LogLevel.Error);
+                Modworks.Log.Error("Failed to read lock config file: " + e.Message);
             }
         }
 
@@ -71,8 +72,10 @@ namespace Lockpicks
         {
             if (InLocks.ContainsKey(key))
             {
-                var c2 = new ConfigLockEnd(InLocks[key]);
-                c2.OutLock = false;
+                var c2 = new ConfigLockEnd(InLocks[key])
+                {
+                    OutLock = false
+                };
                 return c2;
             }
             return null;
