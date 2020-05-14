@@ -36,6 +36,9 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="0Harmony">
+      <HintPath>F:\Steam\steamapps\common\Stardew Valley\smapi-internal\0Harmony.dll</HintPath>
+    </Reference>
     <Reference Include="JsonAssets">
       <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Stardew Valley\Mods\JsonAssets\JsonAssets.dll</HintPath>
     </Reference>

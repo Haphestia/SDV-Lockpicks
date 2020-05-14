@@ -27,7 +27,7 @@ namespace Lockpicks
                 new JsonAssets.Data.ObjectData()
                 {
                     texture = Helper.Content.Load<Microsoft.Xna.Framework.Graphics.Texture2D>("lockpick.png", ContentSource.ModFolder),
-                    PurchaseFrom = "Krobus",
+                    PurchaseFrom = "Pierre",
                     CanPurchase = true,
                     Category = JsonAssets.Data.ObjectData.Category_.Junk,
                     ContextTags = new List<string>() { "Lockpick", "Utility", "Contraband" },
@@ -122,7 +122,7 @@ namespace Lockpicks
             var parameters = args.Action.Split(' ');
             if (parameters.Length < 1) return;
             bool lockFound = false;
-            if (parameters[0] == "LockedDoorWarp" && (Game1.timeOfDay < int.Parse(parameters[4]) || Game1.timeOfDay > int.Parse(parameters[5]))) lockFound = true;
+            if (parameters[0] == "LockedDoorWarp" && (Game1.timeOfDay < int.Parse(parameters[4]) || Game1.timeOfDay >= int.Parse(parameters[5]))) lockFound = true;
             else if (parameters[0] == "Door" && parameters.Length > 1 && Game1.player.getFriendshipLevelForNPC(parameters[1]) < 500) lockFound = true;
             else if (parameters[0] == "SkullDoor" && !args.Farmer.hasUnlockedSkullDoor && !args.Farmer.hasSkullKey) lockFound = true;
             else if (parameters[0] == "WarpCommunityCenter" && !(Game1.MasterPlayer.mailReceived.Contains("ccDoorUnlock") || Game1.MasterPlayer.mailReceived.Contains("JojaMember"))) lockFound = true;
