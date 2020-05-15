@@ -4,11 +4,14 @@ using System;
 using StardewValley;
 using StardewModdingAPI.Events;
 using Microsoft.Xna.Framework;
+using System.Reflection;
+using System.Linq;
 
 namespace Lockpicks
 {
     public class Mod : StardewModdingAPI.Mod
     {
+        internal static JsonAssets JA;
         internal static Mod instance;
         internal static Random RNG = new Random(Guid.NewGuid().GetHashCode());
 
@@ -22,29 +25,16 @@ namespace Lockpicks
             instance = this;
 
             //let's register the item with JsonAssets
-            JsonAssets.Mod.instance.RegisterObject(
-                this.ModManifest,
-                new JsonAssets.Data.ObjectData()
-                {
-                    texture = Helper.Content.Load<Microsoft.Xna.Framework.Graphics.Texture2D>("lockpick.png", ContentSource.ModFolder),
-                    PurchaseFrom = "Pierre",
-                    CanPurchase = true,
-                    Category = JsonAssets.Data.ObjectData.Category_.Junk,
-                    ContextTags = new List<string>() { "Lockpick", "Utility", "Contraband" },
-                    Description = helper.Translation.Get("tooltip"),
-                    GiftTastes = new JsonAssets.Data.ObjectData.GiftTastes_() { Love = new[] { "Dwarf" }, Like = { "Krobus", "Abigail" }, Neutral = { "Clint" }, Dislike = { "Pierre" } },
-                    IsColored = false,
-                    Name = helper.Translation.Get("tool"),
-                    Price = 15,
-                    PurchasePrice = 500,
-                    Recipe = null,
-                }
-            );
+            JA = new JsonAssets(this);
+            if (!JA.IsHappy) return; //hook no events
+            JA.RegisterObject(Helper.Translation.Get("tool"), Helper.Translation.Get("tooltip"), "lockpick.png", "Pierre", StardewValley.Object.junkCategory, 15, 500);
+            
             Helper.Events.GameLoop.SaveLoaded += GameLoop_SaveLoaded;
             Helper.Events.GameLoop.DayStarted += new EventHandler<StardewModdingAPI.Events.DayStartedEventArgs>(delegate (object o, StardewModdingAPI.Events.DayStartedEventArgs a) { LockCache.Clear(); });
             Helper.Events.Input.ButtonPressed += Input_ButtonPressed;
             TileCheckAction += OnTileAction;
         }
+
 
         private static void Input_ButtonPressed(object sender, ButtonPressedEventArgs e)
         {
@@ -111,8 +101,8 @@ namespace Lockpicks
 
         private void GameLoop_SaveLoaded(object sender, StardewModdingAPI.Events.SaveLoadedEventArgs e)
         {
-            LockpickItemId = Helper.ModRegistry.GetApi<JsonAssets.IApi>("spacechase0.JsonAssets").GetObjectId("Lockpick");
-            Monitor.Log("Lockpick item ID: " + LockpickItemId, LogLevel.Trace);
+            LockpickItemId = JA.GetObjectId("Lockpick").Value;
+            Monitor.Log("Lockpick item ID: " + LockpickItemId, LogLevel.Info);
             Helper.Events.Multiplayer.ModMessageReceived += Multiplayer_ModMessageReceived;
         }
 
