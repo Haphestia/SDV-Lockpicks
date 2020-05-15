@@ -119,7 +119,7 @@ namespace Lockpicks
                         lockFound = true;
                         break;
                     }
-                    if(parameters[3] == "SeedShop" && Game1.Date.DayOfWeek == DayOfWeek.Wednesday)
+                    if(parameters[3] == "SeedShop" && Game1.Date.DayOfWeek == DayOfWeek.Wednesday && !Game1.MasterPlayer.eventsSeen.Contains(191393))
                     {
                         lockFound = true;
                         break;
