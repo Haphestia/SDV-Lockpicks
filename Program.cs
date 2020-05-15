@@ -150,16 +150,16 @@ namespace Lockpicks
                 case "EnterSewer":
                     if (!Game1.player.hasRustyKey && !Game1.player.mailReceived.Contains("OpenedSewer")) lockFound = true;
                     break;
+                case "Warp_Sunroom_Door":
+                    if (Game1.player.getFriendshipHeartLevelForNPC("Caroline") < 2) lockFound = true;
+                    break;
             }
             //todo: forest sewer grate (town works), checks for tile id 1394 on forest map
-            //todo: caroline's sunroom door
+            //todo: caroline's sunroom door //Warp_Sunroom_Door
             //todo: haley's dark room, requires loading temp map //Message "HaleyHouse.1"
             //todo: marnie's... coop thing, requires loading temp map //Message "AnimalShop.17"
-            //todo: movie theater
+            //todo: movie theater //Theater_Entrance
             //todo: ruined jojamart (throws error in console at the moment)
-            //wizard house //LockedDoorWarp 8 24 WizardHouse 600 2300
-
-            //LockedDoorWarp 7 9 LeahHouse 1000 1800 Leah 500
 
             bool cached = LockCache.Contains(GenerateCacheKey(parameters[0], args.GameLocation, args.TileLocation.X, args.TileLocation.Y));
             if (!cached && !Game1.player.hasItemInInventory(LockpickItemId, 1)) return; //we're done here
@@ -271,6 +271,11 @@ namespace Lockpicks
             {
                 if (!picked) Game1.playSound("stairsdown");
                 WarpFarmer("Sewer", 16, 11);
+            }
+            else if (Lock[0] == "Warp_Sunroom_Door")
+            {
+                if (!picked) Game1.playSound("doorClose");
+                WarpFarmer("Sunroom", 5, 13);
             }
         }
 
