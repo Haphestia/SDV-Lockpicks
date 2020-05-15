@@ -153,12 +153,24 @@ namespace Lockpicks
                 case "Warp_Sunroom_Door":
                     if (Game1.player.getFriendshipHeartLevelForNPC("Caroline") < 2) lockFound = true;
                     break;
+                case "Theater_Entrance":
+                    if (!Game1.MasterPlayer.hasOrWillReceiveMail("ccMovieTheater")) break;
+                    if (Game1.player.team.movieMutex.IsLocked() || Game1.isFestival() || Game1.timeOfDay > 2100 || Game1.timeOfDay < 900)
+                    {
+                        lockFound = true;
+                        break;
+                    }
+                    if (!Game1.player.hasItemInInventory(809, 1, 0))
+                    {
+                        lockFound = true;
+                        break;
+                    }
+                    if (Game1.player.lastSeenMovieWeek.Value >= Game1.Date.TotalWeeks) lockFound = true;
+                    break;
             }
             //todo: forest sewer grate (town works), checks for tile id 1394 on forest map
-            //todo: caroline's sunroom door //Warp_Sunroom_Door
             //todo: haley's dark room, requires loading temp map //Message "HaleyHouse.1"
             //todo: marnie's... coop thing, requires loading temp map //Message "AnimalShop.17"
-            //todo: movie theater //Theater_Entrance
             //todo: ruined jojamart (throws error in console at the moment)
 
             bool cached = LockCache.Contains(GenerateCacheKey(parameters[0], args.GameLocation, args.TileLocation.X, args.TileLocation.Y));
@@ -276,6 +288,11 @@ namespace Lockpicks
             {
                 if (!picked) Game1.playSound("doorClose");
                 WarpFarmer("Sunroom", 5, 13);
+            }
+            else if (Lock[0] == "Theater_Entrance")
+            {
+                if (!picked) Game1.playSound("doorClose");
+                WarpFarmer("MovieTheater", 13, 15);
             }
         }
 
