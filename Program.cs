@@ -6,6 +6,7 @@ using StardewModdingAPI.Events;
 using Microsoft.Xna.Framework;
 using System.Reflection;
 using System.Linq;
+using StardewValley.Locations;
 
 namespace Lockpicks
 {
@@ -34,7 +35,6 @@ namespace Lockpicks
             Helper.Events.Input.ButtonPressed += Input_ButtonPressed;
             TileCheckAction += OnTileAction;
         }
-
 
         private static void Input_ButtonPressed(object sender, ButtonPressedEventArgs e)
         {
@@ -98,7 +98,6 @@ namespace Lockpicks
             }
         }
 
-
         private void GameLoop_SaveLoaded(object sender, StardewModdingAPI.Events.SaveLoadedEventArgs e)
         {
             LockpickItemId = JA.GetObjectId("Lockpick").Value;
@@ -108,18 +107,59 @@ namespace Lockpicks
 
         private void OnTileAction(object sender, TileCheckActionEventArgs args)
         {
+            //Monitor.Log(args.Action, LogLevel.Alert);
             if (args.Cancelled) return; //already eaten by someone else
             var parameters = args.Action.Split(' ');
             if (parameters.Length < 1) return;
             bool lockFound = false;
-            if (parameters[0] == "LockedDoorWarp" && (Game1.timeOfDay < int.Parse(parameters[4]) || Game1.timeOfDay >= int.Parse(parameters[5]))) lockFound = true;
-            else if (parameters[0] == "Door" && parameters.Length > 1 && Game1.player.getFriendshipLevelForNPC(parameters[1]) < 500) lockFound = true;
-            else if (parameters[0] == "SkullDoor" && !args.Farmer.hasUnlockedSkullDoor && !args.Farmer.hasSkullKey) lockFound = true;
-            else if (parameters[0] == "WarpCommunityCenter" && !(Game1.MasterPlayer.mailReceived.Contains("ccDoorUnlock") || Game1.MasterPlayer.mailReceived.Contains("JojaMember"))) lockFound = true;
-            else if (parameters[0] == "WarpWomensLocker" && Game1.player.IsMale) lockFound = true;
-            else if (parameters[0] == "WarpMensLocker" && !Game1.player.IsMale) lockFound = true;
-            else if (parameters[0] == "WizardHatch" && (Game1.player.friendshipData.ContainsKey("Wizard") && Game1.player.friendshipData["Wizard"].Points >= 1000)) lockFound = true;
-            else if (parameters[0] == "EnterSewer" && !Game1.player.hasRustyKey && !Game1.player.mailReceived.Contains("OpenedSewer")) lockFound = true;
+            switch (parameters[0])
+            {
+                case "LockedDoorWarp":
+                    if(parameters[3] == "WizardHouse" && !isWizardHouseUnlocked()) {
+                        lockFound = true;
+                        break;
+                    }
+                    if(parameters[3] == "SeedShop" && Game1.Date.DayOfWeek == DayOfWeek.Wednesday)
+                    {
+                        lockFound = true;
+                        break;
+                    }
+                    //check business hours
+                    if (Game1.timeOfDay < int.Parse(parameters[4]) || Game1.timeOfDay >= int.Parse(parameters[5])) lockFound = true;
+                    //check for a friendship requirement
+                    else if(parameters.Length > 6 && Game1.player.getFriendshipLevelForNPC(parameters[6]) < int.Parse(parameters[7])) lockFound = true;
+                    break;
+                case "Door":
+                    if (parameters.Length > 1 && Game1.player.getFriendshipLevelForNPC(parameters[1]) < 500) lockFound = true;
+                    break;
+                case "SkullDoor":
+                    if (!args.Farmer.hasUnlockedSkullDoor && !args.Farmer.hasSkullKey) lockFound = true;
+                    break;
+                case "WarpCommunityCenter":
+                    if (!(Game1.MasterPlayer.mailReceived.Contains("ccDoorUnlock") || Game1.MasterPlayer.mailReceived.Contains("JojaMember"))) lockFound = true;
+                    break;
+                case "WarpWomensLocker":
+                    if (Game1.player.IsMale) lockFound = true;
+                    break;
+                case "WarpMensLocker":
+                    if (!Game1.player.IsMale) lockFound = true;
+                    break;
+                case "WizardHatch":
+                    if ((!Game1.player.friendshipData.ContainsKey("Wizard") || Game1.player.friendshipData["Wizard"].Points < 1000)) lockFound = true;
+                    break;
+                case "EnterSewer":
+                    if (!Game1.player.hasRustyKey && !Game1.player.mailReceived.Contains("OpenedSewer")) lockFound = true;
+                    break;
+            }
+            //todo: forest sewer grate (town works), checks for tile id 1394 on forest map
+            //todo: caroline's sunroom door
+            //todo: haley's dark room, requires loading temp map //Message "HaleyHouse.1"
+            //todo: marnie's... coop thing, requires loading temp map //Message "AnimalShop.17"
+            //todo: movie theater
+            //todo: ruined jojamart (throws error in console at the moment)
+            //wizard house //LockedDoorWarp 8 24 WizardHouse 600 2300
+
+            //LockedDoorWarp 7 9 LeahHouse 1000 1800 Leah 500
 
             bool cached = LockCache.Contains(GenerateCacheKey(parameters[0], args.GameLocation, args.TileLocation.X, args.TileLocation.Y));
             if (!cached && !Game1.player.hasItemInInventory(LockpickItemId, 1)) return; //we're done here
@@ -140,12 +180,26 @@ namespace Lockpicks
             }
         }
 
+        protected virtual bool isWizardHouseUnlocked()
+        {
+            if (Game1.player.mailReceived.Contains("wizardJunimoNote") || Game1.MasterPlayer.mailReceived.Contains("JojaMember"))
+                return true;
+            int num1 = Game1.MasterPlayer.mailReceived.Contains("ccFishTank") ? 1 : 0;
+            bool flag1 = Game1.MasterPlayer.mailReceived.Contains("ccBulletin");
+            bool flag2 = Game1.MasterPlayer.mailReceived.Contains("ccPantry");
+            bool flag3 = Game1.MasterPlayer.mailReceived.Contains("ccVault");
+            bool flag4 = Game1.MasterPlayer.mailReceived.Contains("ccBoilerRoom");
+            bool flag5 = Game1.MasterPlayer.mailReceived.Contains("ccCraftsRoom");
+            int num2 = flag1 ? 1 : 0;
+            return (num1 & num2 & (flag2 ? 1 : 0) & (flag3 ? 1 : 0) & (flag4 ? 1 : 0) & (flag5 ? 1 : 0)) != 0;
+        }
+
         public void AcceptLockpick(Farmer who, string answerKey)
         {
             if (answerKey == "No" || !answerKey.StartsWith("l^")) return; //wtf
             var parameters = answerKey.Substring(2).Split('^');
             if (parameters.Length != 3) return; //also wtf
-            if (RNG.Next(35) == 0) //almost never breaks
+            if (RNG.Next(30) == 0) //almost never breaks
             {
                 Game1.player.removeFirstOfThisItemFromInventory(LockpickItemId);
                 Game1.showRedMessage(Helper.Translation.Get("broke"));
@@ -224,9 +278,7 @@ namespace Lockpicks
         {
             GameLocation destination = Game1.getLocationFromName(location);
             Game1.warpFarmer(new LocationRequest(destination.NameOrUniqueName, destination.uniqueName.Value != null, destination), x, y, 2);
-
         }
-
 
         //Tile Check Action - called when a player activates a tile with an Action property. Cancellable.
         public static event TileCheckActionHandler TileCheckAction;
