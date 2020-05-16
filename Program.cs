@@ -115,7 +115,12 @@ namespace Lockpicks
             switch (parameters[0])
             {
                 case "LockedDoorWarp":
-                    if(parameters[3] == "WizardHouse" && !isWizardHouseUnlocked()) {
+                    if (Utility.isFestivalDay(Game1.dayOfMonth, Game1.currentSeason) && Utility.getStartTimeOfFestival() < 1900)
+                    {
+                        lockFound = true;
+                        break;
+                    }
+                    if (parameters[3] == "WizardHouse" && !isWizardHouseUnlocked()) {
                         lockFound = true;
                         break;
                     }
