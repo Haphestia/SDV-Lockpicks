@@ -166,8 +166,6 @@ namespace Lockpicks
                     break;
             }
             //todo: forest sewer grate (town works), checks for tile id 1394 on forest map
-            //todo: haley's dark room, requires loading temp map //Message "HaleyHouse.1"
-            //todo: marnie's... coop thing, requires loading temp map //Message "AnimalShop.17"
             //todo: ruined jojamart (throws error in console at the moment)
 
             bool cached = LockCache.Contains(GenerateCacheKey(parameters[0], args.GameLocation, args.TileLocation.X, args.TileLocation.Y));
@@ -298,14 +296,22 @@ namespace Lockpicks
                     if (!picked) Game1.playSound("doorClose");
                     string mapPath = "Maps\\Darkroom";
                     Game1.content.Load<xTile.Map>(mapPath); // make sure map is loaded before game accesses it
-                    //string mapKey = Helper.Content.GetActualAssetKey(mapPath);
                     var newLocation = new GameLocation(mapPath, "Temp");
-                    Game1.currentLocation = newLocation;//Game1.getLocationFromName("Town");
+                    Game1.currentLocation = newLocation;
                     Game1.currentLocation.resetForPlayerEntry();
                     Game1.currentLocation.warps.Add(new Warp(3, 8, "HaleyHouse", 4, 4, false));
                     Game1.player.currentLocation = Game1.currentLocation;
-                    Game1.player.Position = new Vector2(192, 384); //new Vector2(1408f, 1216f);
-                    //3 6
+                    Game1.player.Position = new Vector2(192, 384);
+                }
+                else if (Lock[1] == "\"AnimalShop.17\"")
+                {
+                    if (!picked) Game1.playSound("doorClose");
+                    Game1.content.Load<xTile.Map>("Maps\\MarnieBarn"); // make sure map is loaded before game accesses it
+                    Game1.currentLocation = new GameLocation("Maps\\MarnieBarn", "Temp");
+                    Game1.currentLocation.resetForPlayerEntry();
+                    Game1.currentLocation.warps.Add(new Warp(3, 9, "AnimalShop", 30, 14, false));
+                    Game1.player.currentLocation = Game1.currentLocation;
+                    Game1.player.Position = new Vector2(192, 448);
                 }
             }
         }
