@@ -155,17 +155,14 @@ namespace Lockpicks
                     break;
                 case "Theater_Entrance":
                     if (!Game1.MasterPlayer.hasOrWillReceiveMail("ccMovieTheater")) break;
-                    if (Game1.player.team.movieMutex.IsLocked() || Game1.isFestival() || Game1.timeOfDay > 2100 || Game1.timeOfDay < 900)
-                    {
-                        lockFound = true;
-                        break;
-                    }
-                    if (!Game1.player.hasItemInInventory(809, 1, 0))
-                    {
-                        lockFound = true;
-                        break;
-                    }
-                    if (Game1.player.lastSeenMovieWeek.Value >= Game1.Date.TotalWeeks) lockFound = true;
+                    if (Game1.player.team.movieMutex.IsLocked() || Game1.isFestival() || Game1.timeOfDay > 2100 || Game1.timeOfDay < 900) lockFound = true;
+                    else if (!Game1.player.hasItemInInventory(809, 1, 0)) lockFound = true;
+                    else if (Game1.player.lastSeenMovieWeek.Value >= Game1.Date.TotalWeeks) lockFound = true;
+                    break;
+                case "Message":
+                    if (parameters.Length < 2) break;
+                    if (parameters[1] == "\"HaleyHouse.1\"") lockFound = true;
+                    else if (parameters[1] == "\"AnimalShop.17\"") lockFound = true;
                     break;
             }
             //todo: forest sewer grate (town works), checks for tile id 1394 on forest map
@@ -293,6 +290,23 @@ namespace Lockpicks
             {
                 if (!picked) Game1.playSound("doorClose");
                 WarpFarmer("MovieTheater", 13, 15);
+            }
+            else if (Lock[0] == "Message")
+            {
+                if (Lock[1] == "\"HaleyHouse.1\"")
+                {
+                    if (!picked) Game1.playSound("doorClose");
+                    string mapPath = "Maps\\Darkroom";
+                    Game1.content.Load<xTile.Map>(mapPath); // make sure map is loaded before game accesses it
+                    //string mapKey = Helper.Content.GetActualAssetKey(mapPath);
+                    var newLocation = new GameLocation(mapPath, "Temp");
+                    Game1.currentLocation = newLocation;//Game1.getLocationFromName("Town");
+                    Game1.currentLocation.resetForPlayerEntry();
+                    Game1.currentLocation.warps.Add(new Warp(3, 8, "HaleyHouse", 4, 4, false));
+                    Game1.player.currentLocation = Game1.currentLocation;
+                    Game1.player.Position = new Vector2(192, 384); //new Vector2(1408f, 1216f);
+                    //3 6
+                }
             }
         }
 
