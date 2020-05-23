@@ -132,7 +132,6 @@ namespace Lockpicks
 
     }
 
-
     public interface IApi
     {
         int GetObjectId(string name);
